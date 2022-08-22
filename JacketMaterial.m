@@ -1,4 +1,4 @@
-function OutputJacketMaterial = JacketMaterial(H)
+ function OutputJacketMaterial = JacketMaterial(H)
 
 D_T = 8.8*0.01;
 D_ji = 11.2*0.01;
