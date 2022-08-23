@@ -1,13 +1,16 @@
 function h_o = Jacket(H)
 
-D_jo = 13.9*0.01; % outer diameter of jacket (m)
-D_ji = 11.2*0.01; % inner diameter of jacket (m)
+%D_jo = 13.9*0.01; % outer diameter of jacket (m)
+D_jo = 13.5*0.01; % outer diameter of jacket (m)
+%D_ji = 11.2*0.01; % inner diameter of jacket (m)
+D_ji = 9.2*0.01;
 Q_HTF = 1/1000/60; % flow rate of heat transfer fluid converted from 1L/min to m^3/s
 diameter_HTF = 0.009525; %3/8 in I.D. tube converted to meter (m)
-A_HTF = pi*(diameter_HTF)^2; % cross-sectional area (m^2)
-v_HTF = Q_HTF/A_HTF/60; % velocity of heat transfer fluid (m/s)
+%A_HTF = pi*(diameter_HTF)^2; % cross-sectional area (m^2)
+A_HTF = pi*(D_jo^2 - D_ji^2)/4;
+v_HTF = Q_HTF/A_HTF; % velocity of heat transfer fluid (m/s)
 row_mixture_HTF = 1079.97*1000; % density of 50/50 EG/water at -5C (g/m^3) from literature, unit conversion from kg/m^3
-mu_mixture_HTF = 10.28/1000*1000; % viscosity of 50/50 EG/water at -5C (g/m*s) from literature converted mPa to Pa to kg/m*s^2 to g/m*s^2 (originally mPa*s)
+mu_mixture_HTF = 10.28/1000*1000; % viscosity of 50/50 EG/water at -5C (g/m*s) from literature converted from mPa to Pa to kg/m*s^2 to g/m*s^2 (originally mPa*s)
 k_mixture_HTF = 0.35015; % thermal conductivity of 50/50 ethylene glycol/water at -5C (W/m*K)
 Cp_mixture_jacket = 3.1689; % heat capcity of 50/50 water/ethylene glycol (J/g*K) from literature
 
