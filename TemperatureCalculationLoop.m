@@ -26,7 +26,8 @@ Cp_NH4OH = 34.807*4.184; % heat capacity of ammonium hydroxide at 270K unit conv
 Cp_mixture = mol_fraction_diglyme*Cp_diglyme + mol_fraction_NH4OH*Cp_NH4OH; %(J/mol*K)
 diglyme_flowrate = B/60; % flow rate of diglyme (mL/s)
 F_A = sulfonyl_chloride_conc/1000*diglyme_flowrate;
-T_a = 273.15 - 5; % jacket temperature (K)
+T_Jin = 273.15 - 5; % jacket temperature (K)
+T_a = 273.15 + 25; % inlet stream temperature (K)
 T = 273.15 - 5; % starting reaction mixture temperature (K)
 t = 0.1;
 X = 1; % conversion of sulfonyl chloride to sulfonamide, 100%
@@ -50,9 +51,9 @@ mol_fraction_diglyme(i) = mol_diglyme(i)/mol_total(i);
 Cp_mixture(i) = mol_fraction_diglyme(i)*Cp_diglyme + mol_fraction_NH4OH(i)*Cp_NH4OH; %(J/mol*K)
 UA(i) = 0.01*V(i) + 2.6667;
 
-Q_RJ(i) = mass_flowrate_HTF*Cp_HTF*(T_a - T(i-1))*(1 - exp((-UA(i)/(mass_flowrate_HTF*Cp_HTF))));
+Q_RJ(i) = mass_flowrate_HTF*Cp_HTF*(T_Jin - T(i-1))*(1 - exp((-UA(i)/(mass_flowrate_HTF*Cp_HTF))));
 
-T(i) = T(i-1)+(Q_RJ(i)*t + Q_gen*t + t*F_A*Cp_mixture(i)*(T(i-1) - T_a))/(V(i)*(mol_NH4OH/V(i)*Cp_NH4OH + mol_diglyme(i)/V(i)*Cp_diglyme));
+T(i) = T(i-1)+(Q_RJ(i)*t + Q_gen*t + t*F_A*Cp_mixture(i)*(T(i-1) - T_Jin))/(V(i)*(mol_NH4OH/V(i)*Cp_NH4OH + mol_diglyme(i)/V(i)*Cp_diglyme));
 end
 
 subplot(2,2,1)
@@ -80,4 +81,3 @@ xlabel('time (0.1 sec)','fontsize',22);
 ylabel('Q_RJ (J/s))','fontsize',22);
 
 end
-
