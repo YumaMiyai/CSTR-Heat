@@ -27,18 +27,18 @@ Cp_mixture = mol_fraction_diglyme*Cp_diglyme + mol_fraction_NH4OH*Cp_NH4OH; %(J/
 diglyme_flowrate = B/60; % flow rate of diglyme (mL/s)
 F_A = sulfonyl_chloride_conc/1000*diglyme_flowrate;
 T_Jin = 273.15 - 5; % jacket temperature (K)
-T_a = 273.15 + 25; % inlet stream temperature (K)
+T_rxn_in = 273.15 + 25; % inlet stream temperature (K)
 T = 273.15 - 5; % starting reaction mixture temperature (K)
 t = 0.1;
 X = 1; % conversion of sulfonyl chloride to sulfonamide, 100%
-UA = 0.01*V + 2.6667;
-Q_RJ = F_A*Cp_mixture*(T_a - T)*(1 - exp(-UA/(F_A*Cp_mixture)));
+UA = 0.0015*V+4.22;
+Q_RJ = F_A*Cp_mixture*(T_Jin - T)*(1 - exp(-UA/(F_A*Cp_mixture)));
 row_mixture_HTF = 1079.97/1000; % density of 50/50 EG/water at -5C (g/mL) from literature, unit conversion from kg/m^3
 Q_HTF = 1*1000/60; % flow rate of heat transfer fluid converted from 1L/min to mL/s
 mass_flowrate_HTF = Q_HTF*row_mixture_HTF; % mL/s * g/mL = g/s
 Cp_HTF = 3.1689; % heat capcity of 50/50 water/ethylene glycol (J/g*K) from literature
 Q_gen = F_A*X*(-deltaH_rxn); % heat of reaction per mol of sulfonamide (J/mol)
-
+Time = 0;
 %%
 % every loop is 0.1 sec
 for i=2:C;
@@ -49,35 +49,38 @@ mol_total(i) = mol_NH4OH + mol_diglyme(i);
 mol_fraction_NH4OH (i)= mol_NH4OH/mol_total(i);
 mol_fraction_diglyme(i) = mol_diglyme(i)/mol_total(i);
 Cp_mixture(i) = mol_fraction_diglyme(i)*Cp_diglyme + mol_fraction_NH4OH(i)*Cp_NH4OH; %(J/mol*K)
-UA(i) = 0.01*V(i) + 2.6667;
+UA(i) = 0.0015*V(i)+4.22;
 
 Q_RJ(i) = mass_flowrate_HTF*Cp_HTF*(T_Jin - T(i-1))*(1 - exp((-UA(i)/(mass_flowrate_HTF*Cp_HTF))));
 
-T(i) = T(i-1)+(Q_RJ(i)*t + Q_gen*t + t*F_A*Cp_mixture(i)*(T(i-1) - T_Jin))/(V(i)*(mol_NH4OH/V(i)*Cp_NH4OH + mol_diglyme(i)/V(i)*Cp_diglyme));
+T(i) = T(i-1)+(Q_RJ(i)*t + Q_gen*t + t*F_A*Cp_mixture(i)*(T(i-1) - T_rxn_in))/(V(i)*(mol_NH4OH/V(i)*Cp_NH4OH + mol_diglyme(i)/V(i)*Cp_diglyme));
+
+Time(i)=i/10/60; % in minutes (min)
+
 end
 
 subplot(2,2,1)
-plot(T)
+plot(Time,T)
 title('Temperature','fontsize',22);
-xlabel('time (0.1 sec)','fontsize',22);
-ylabel('Temperature (K))','fontsize',22);
+xlabel('time (min)','fontsize',22);
+ylabel('Temperature (K)','fontsize',22);
 
 subplot(2,2,2)
-plot(V)
+plot(Time,V)
 title('Volume','fontsize',22);
-xlabel('time (0.1 sec)','fontsize',22);
-ylabel('Volume (mL))','fontsize',22);
+xlabel('time (min)','fontsize',22);
+ylabel('Volume (mL)','fontsize',22);
 
 subplot(2,2,3)
-plot(UA)
+plot(Time,UA)
 title('UA','fontsize',22);
-xlabel('time (0.1 sec)','fontsize',22);
-ylabel('UA (J/s*K))','fontsize',22);
+xlabel('time (min)','fontsize',22);
+ylabel('UA (J/s*K)','fontsize',22);
 
 subplot(2,2,4)
-plot(Q_RJ)
+plot(Time,Q_RJ)
 title('Reactor Heat Removal Rate','fontsize',22);
-xlabel('time (0.1 sec)','fontsize',22);
-ylabel('Q_RJ (J/s))','fontsize',22);
+xlabel('time (min)','fontsize',22);
+ylabel('Q_RJ (J/s)','fontsize',22);
 
 end
