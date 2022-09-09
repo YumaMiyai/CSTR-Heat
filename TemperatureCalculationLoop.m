@@ -1,9 +1,9 @@
-function TemperatureCalculationLoop(NH4OH_Volume,SM_Flowrate)
+function [T,Cp_mixture,UA]=TemperatureCalculationLoop(NH4OH_Volume,SM_Flowrate)
 
 A = NH4OH_Volume;
 B = SM_Flowrate;
 C = A/B*60/0.1; % number of loops which is volume of 1.7M sulfonyl chloride solution (mL)/flow rate of 1.7M sulfonyl chloride solution (mL/min)*60s/min = 1 loop is 1 sec * 0.1 = 1 loop is 0.1s
-
+D = C + 30*60*10;
 
 sulfonyl_chloride_conc = 1.7; % 1.7M sulfonyl chloride solution in diglyme (M or mol/L)
 deltaH_rxn = -192000; % heat of reaction per mole of sulfonamide formation (J/mol)
@@ -40,10 +40,11 @@ Cp_HTF = 3.1689; % heat capcity of 50/50 water/ethylene glycol (J/g*K) from lite
 Q_gen = F_A*X*(-deltaH_rxn); % heat of reaction per mol of sulfonamide (J/mol)
 Time = 0;
 %%
-% every loop is 0.1 sec
+% Startup Sequence - every loop is 0.1 sec
 for i=2:C;
+Vol_NH4OH(i) = Vol_NH4OH(i-1);
 Vol_diglyme(i) = Vol_diglyme(i-1) + diglyme_flowrate*t; % (mL)
-V(i) = Vol_diglyme (i) + Vol_NH4OH; %(mL)
+V(i) = Vol_diglyme (i) + Vol_NH4OH(i); %(mL)
 mol_diglyme(i) = Vol_diglyme(i)*row_diglyme/MW_diglyme;
 mol_total(i) = mol_NH4OH + mol_diglyme(i);
 mol_fraction_NH4OH (i)= mol_NH4OH/mol_total(i);
@@ -59,28 +60,56 @@ Time(i)=i/10/60; % in minutes (min)
 
 end
 
+% Addition of 10N NH4OH and 1.7M Step 1 and taking out step 1 reaction
+% mixutre m_in = m_out
+
+NH4OH_flowrate = B/60; % flow rate of diglyme (mL/s)
+out_flowrate = NH4OH_flowrate + diglyme_flowrate; % flow rate out of CSTR (mL/s)
+
+% for i=C:D;
+% Vol_NH4OH(i) = Vol_NH4OH(i-1) + NH4OH_flowrate*t - out_flowrate*t/2;
+% Vol_diglyme(i) = Vol_diglyme(i-1) + diglyme_flowrate*t - out_flowrate*t/2; % (mL)
+% V(i) = Vol_diglyme (i) + Vol_NH4OH(i); %(mL)
+% mol_diglyme(i) = Vol_diglyme(i)*row_diglyme/MW_diglyme;
+% mol_total(i) = mol_NH4OH + mol_diglyme(i);
+% mol_fraction_NH4OH (i)= mol_NH4OH/mol_total(i);
+% mol_fraction_diglyme(i) = mol_diglyme(i)/mol_total(i);
+% Cp_mixture(i) = mol_fraction_diglyme(i)*Cp_diglyme + mol_fraction_NH4OH(i)*Cp_NH4OH; %(J/mol*K)
+% UA(i) = 0.0015*V(i)+4.22;
+% 
+% Q_RJ(i) = mass_flowrate_HTF*Cp_HTF*(T_Jin - T(i-1))*(1 - exp((-UA(i)/(mass_flowrate_HTF*Cp_HTF))));
+% 
+% T(i) = T(i-1)+(Q_RJ(i)*t + Q_gen*t + t*F_A*Cp_mixture(i)*(T(i-1) - T_rxn_in))/(V(i)*(mol_NH4OH/V(i)*Cp_NH4OH + mol_diglyme(i)/V(i)*Cp_diglyme));
+% 
+% Time(i)=i/10/60; % in minutes (min)
+% 
+% end
+
 subplot(2,2,1)
-plot(Time,T)
+plot(Time,T,'.')
 title('Temperature','fontsize',22);
 xlabel('time (min)','fontsize',22);
 ylabel('Temperature (K)','fontsize',22);
 
 subplot(2,2,2)
-plot(Time,V)
+plot(Time,V,'.')
 title('Volume','fontsize',22);
 xlabel('time (min)','fontsize',22);
 ylabel('Volume (mL)','fontsize',22);
 
 subplot(2,2,3)
-plot(Time,UA)
+plot(Time,UA,'.')
 title('UA','fontsize',22);
 xlabel('time (min)','fontsize',22);
 ylabel('UA (J/s*K)','fontsize',22);
 
 subplot(2,2,4)
-plot(Time,Q_RJ)
+plot(Time,Q_RJ,'.')
 title('Reactor Heat Removal Rate','fontsize',22);
 xlabel('time (min)','fontsize',22);
 ylabel('Q_RJ (J/s)','fontsize',22);
 
+T = T(1:10:end)';
+Cp_mixture = Cp_mixture(1:10:end)';
+UA = UA(1:10:end)';
 end
